@@ -1,0 +1,24 @@
+<resources>
+
+
+    <style xmlns:app="http://schemas.android.com/apk/res-auto" name="BottomButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="layout_constraintBottom_toBottomOf">parent</item>
+        <item name="layout_constraintLeft_toLeftOf">parent</item>
+        <item name="layout_constraintRight_toRightOf">parent</item>
+        <item name="layout_constraintTop_toTopOf">parent</item>
+        <item name="layout_constraintHorizontal_bias">0.5</item>
+        <item name="layout_constraintVertical_bias">0.9</item>
+    </style>
+
+
+    <style xmlns:app="http://schemas.android.com/apk/res-auto" name="TestButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+
+
+</resources>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/tv_user"
+        style="@style/TestButton"
+        android:text="用户名"
+        />
+
+    <EditText
+        android:id="@+id/et_user"
+        style="@style/TestButton"
+        />
+
+    <TextView
+        android:id="@+id/tv_password"
+        style="@style/TestButton"
+        android:text="密码"
+         />
+
+    <EditText
+        android:id="@+id/et_password"
+        style="@style/TestButton"
+        />
+
+    <Button
+        android:id="@+id/bt_login"
+        style="@style/TestButton"
+        android:text="登陆"/>
+    <Button
+        android:id="@+id/bt_scree_lock"
+        style="@style/TestButton"
+        android:text="锁屏"/>
+    <TextView
+        android:id="@+id/tv_test"
+        style="@style/TestButton"
+
+        android:text="在该页面测试广告板键值"
+         />
+
+</LinearLayout>
