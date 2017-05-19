@@ -276,6 +276,9 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
 
                             @Override
                             public void run() {
+                                if (!isInCalling) {
+                                    EMClient.getInstance().callManager().switchCamera();
+                                }
 //                            callStateTextView.setText(R.string.have_connected_with);
                             }
 

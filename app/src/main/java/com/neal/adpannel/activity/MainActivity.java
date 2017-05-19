@@ -149,8 +149,8 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
      */
     SQLiteDatabase db;
     String str_Update = "{\"time_stamp\":\"2017101010101\"}";
-    String str_Ad = "[{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":0,\"time_stamp\":\"1\",\"height\":525,\"width\":350,\"file_name\":\"picture1.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":3,\"banner_group\":\"333\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":525,\"time_stamp\":\"2\",\"height\":400,\"width\":800,\"file_name\":\"video1.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"left\":0,\"banner_group\":\"333\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":925,\"time_stamp\":\"3\",\"height\":525,\"width\":350,\"file_name\":\"picture2.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":4,\"banner_group\":\"222\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":925,\"time_stamp\":\"4\",\"height\":400,\"width\":800,\"file_name\":\"video2.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"banner_group\":\"222\",\"left\":350}]";
-//    String str_Ad = "[{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":525,\"time_stamp\":\"2\",\"height\":400,\"width\":800,\"file_name\":\"video1.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"left\":0,\"banner_group\":\"333\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":925,\"time_stamp\":\"4\",\"height\":400,\"width\":800,\"file_name\":\"video2.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"banner_group\":\"222\",\"left\":350}]";
+//    String str_Ad = "[{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":0,\"time_stamp\":\"1\",\"height\":525,\"width\":350,\"file_name\":\"picture1.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":3,\"banner_group\":\"333\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":525,\"time_stamp\":\"2\",\"height\":400,\"width\":800,\"file_name\":\"video1.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"left\":0,\"banner_group\":\"333\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":925,\"time_stamp\":\"3\",\"height\":525,\"width\":350,\"file_name\":\"picture2.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":4,\"banner_group\":\"222\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":925,\"time_stamp\":\"4\",\"height\":400,\"width\":800,\"file_name\":\"video2.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"banner_group\":\"222\",\"left\":350}]";
+    String str_Ad = "[{\"font_bold\":false,\"font_size\":0,\"data\":\"http://i4.buimg.com/1949/e3eb96125a1c3dd7.jpg\",\"top\":0,\"time_stamp\":\"2\",\"height\":1366,\"width\":768,\"file_name\":\"bg.jgp\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"banner_group\":\"222\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":220,\"time_stamp\":\"4\",\"height\":340,\"width\":585,\"file_name\":\"video2.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"banner_group\":\"333\",\"left\":90},{\"font_bold\":true,\"font_size\":30,\"data\":\"8\",\"top\":30,\"time_stamp\":\"5\",\"height\":70,\"width\":60,\"file_name\":\"video2.mp4\",\"font_color\":\"#FF0000\",\"set_type\":0,\"type\":0,\"font_family\":0,\"banner_group\":\"444\",\"left\":470}]";
 
 
     @Override
@@ -413,8 +413,15 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
             layoutParams.topMargin = adEntity.getTop();
             //判断元素类型
             switch (adEntity.getType()) {
+                //文字
+                case 0:
+                    adEntity.save();
+                    break;
                 //视频
                 case 1:
+                    //文件路径入库
+                    adEntity.setFile_path(context.getFilesDir().getAbsolutePath() + "/" + adEntity.getFile_name());
+                    adEntity.save();
                     //待下载文件数 + 1
                     allFiles++;
                     //设置视频下载器回调
@@ -423,9 +430,6 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
                     fileSave.saveFile(context.getFilesDir().getAbsolutePath(), adEntity.getFile_name(), adEntity.getData(), new onDownLoadListener() {
                         @Override
                         public void success(File data) {
-                            //文件路径入库
-                            adEntity.setFile_path(data.getAbsolutePath());
-                            adEntity.save();
                             //下载成功，待下载文件数 -1
                             allFiles--;
                             //所有文件下载完毕，开始播放呀！
@@ -437,12 +441,14 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
                         @Override
                         public void fail() {
                             Logs.i(TAG, "视频下载失败！");
-
                         }
                     });
                     break;
                 //图片
                 case 2:
+                    //文件路径入库
+                    adEntity.setFile_path(context.getFilesDir().getAbsolutePath() + "/" + adEntity.getFile_name());
+                    adEntity.save();
                     //待下载文件数 + 1
                     allFiles++;
                     //设置图片下载器回调
@@ -451,9 +457,6 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
                     fileSave.saveFile(context.getFilesDir().getAbsolutePath(), adEntity.getFile_name(), adEntity.getData(), new onDownLoadListener() {
                         @Override
                         public void success(File data) {
-                            //文件路径入库
-                            adEntity.setFile_path(data.getAbsolutePath());
-                            adEntity.save();
                             //下载成功，待下载文件数 -1
                             allFiles--;
                             //所有文件下载完毕，开始播放呀！
@@ -563,77 +566,83 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
         switch (currAd.getType()) {
             //文本
             case 0:
-                //查看缓存中是否已有该控件
-                TextView tv_ad = (TextView) fm_container.findViewWithTag(currAd.getTime_stamp());
-                //有则直接显示
-                if (tv_ad != null) {
-                    tv_ad.setVisibility(View.VISIBLE);
-                    return;
-                }
-                //没有则新建
-                tv_ad = new TextView(MainActivity.this);
-                tv_ad.setText(currAd.getData());
-                tv_ad.setLayoutParams(layoutParams);
-                //处理字体
-                Typeface typeFace = null;
 
-                switch (currAd.getFont_family()) {
-                    //宋体
-                    case 1:
-                        typeFace = Typeface.createFromAsset(getAssets(), "song.ttf");
-                        tv_ad.setTypeface(typeFace);
-                        break;
-                    //楷体
-                    case 2:
-                        typeFace = Typeface.createFromAsset(getAssets(), "kai.ttf");
-                        tv_ad.setTypeface(typeFace);
-                        break;
-                    //黑体
-                    case 3:
-                        typeFace = Typeface.createFromAsset(getAssets(), "hei.ttf");
-                        tv_ad.setTypeface(typeFace);
-                        break;
-                    //魏体
-                    case 4:
-                        typeFace = Typeface.createFromAsset(getAssets(), "wei.ttf");
-                        tv_ad.setTypeface(typeFace);
-                        break;
-                    //行体
-                    case 5:
-                        typeFace = Typeface.createFromAsset(getAssets(), "xing.ttf");
-                        tv_ad.setTypeface(typeFace);
-                        break;
-                    //圆体
-                    case 6:
-                        typeFace = Typeface.createFromAsset(getAssets(), "yuan.ttf");
-                        tv_ad.setTypeface(typeFace);
-                        break;
-                    //隶书
-                    case 7:
-                        typeFace = Typeface.createFromAsset(getAssets(), "li.ttf");
-                        tv_ad.setTypeface(typeFace);
-                        break;
-                    //微软雅黑
-                    case 8:
-                        typeFace = Typeface.createFromAsset(getAssets(), "yahei.ttf");
-                        tv_ad.setTypeface(typeFace);
-                        break;
-                }
-                //判断是否为粗体
-                if (currAd.isFont_bold()) {
-                    TextPaint paint = tv_ad.getPaint();
-                    paint.setFakeBoldText(true);
-                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //查看缓存中是否已有该控件
+                        TextView tv_ad = (TextView) fm_container.findViewWithTag(currAd.getTime_stamp());
+                        //有则直接显示
+                        if (tv_ad != null) {
+                            tv_ad.setVisibility(View.VISIBLE);
+                            return;
+                        }
+                        //没有则新建
+                        tv_ad = new TextView(MainActivity.this);
+                        tv_ad.setText(currAd.getData());
+                        tv_ad.setLayoutParams(layoutParams);
+                        //处理字体
+                        Typeface typeFace = null;
 
-                //设置字体大小
-                tv_ad.setTextSize(currAd.getFont_size());
-                //设置字体颜色
-                tv_ad.setTextColor(Color.parseColor(currAd.getFont_color()));
-                //给控件设置标记
-                tv_ad.setTag(currAd.getTime_stamp());
-                //设置完毕添加文字
-                tv_ad.setVisibility(View.VISIBLE);
-                fm_container.addView(tv_ad);
+                        switch (currAd.getFont_family()) {
+                            //宋体
+                            case 1:
+                                typeFace = Typeface.createFromAsset(getAssets(), "song.ttf");
+                                tv_ad.setTypeface(typeFace);
+                                break;
+                            //楷体
+                            case 2:
+                                typeFace = Typeface.createFromAsset(getAssets(), "kai.ttf");
+                                tv_ad.setTypeface(typeFace);
+                                break;
+                            //黑体
+                            case 3:
+                                typeFace = Typeface.createFromAsset(getAssets(), "hei.ttf");
+                                tv_ad.setTypeface(typeFace);
+                                break;
+                            //魏体
+                            case 4:
+                                typeFace = Typeface.createFromAsset(getAssets(), "wei.ttf");
+                                tv_ad.setTypeface(typeFace);
+                                break;
+                            //行体
+                            case 5:
+                                typeFace = Typeface.createFromAsset(getAssets(), "xing.ttf");
+                                tv_ad.setTypeface(typeFace);
+                                break;
+                            //圆体
+                            case 6:
+                                typeFace = Typeface.createFromAsset(getAssets(), "yuan.ttf");
+                                tv_ad.setTypeface(typeFace);
+                                break;
+                            //隶书
+                            case 7:
+                                typeFace = Typeface.createFromAsset(getAssets(), "li.ttf");
+                                tv_ad.setTypeface(typeFace);
+                                break;
+                            //微软雅黑
+                            case 8:
+                                typeFace = Typeface.createFromAsset(getAssets(), "yahei.ttf");
+                                tv_ad.setTypeface(typeFace);
+                                break;
+                        }
+                        //判断是否为粗体
+                        if (currAd.isFont_bold()) {
+                            TextPaint paint = tv_ad.getPaint();
+                            paint.setFakeBoldText(true);
+                        }
+
+                        //设置字体大小
+                        tv_ad.setTextSize(currAd.getFont_size());
+                        //设置字体颜色
+                        tv_ad.setTextColor(Color.parseColor(currAd.getFont_color()));
+                        //给控件设置标记
+                        tv_ad.setTag(currAd.getTime_stamp());
+                        //设置完毕添加文字
+                        tv_ad.setVisibility(View.VISIBLE);
+                        fm_container.addView(tv_ad);
+                    }
+                });
                 break;
             //视频
             case 1:
@@ -770,6 +779,8 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
     @Override
     protected void onResume() {
         super.onResume();
+        //去掉虚拟按键全屏显示
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         ADResume();
     }
 
