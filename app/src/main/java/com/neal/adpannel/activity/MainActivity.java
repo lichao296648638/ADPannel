@@ -4,9 +4,7 @@ package com.neal.adpannel.activity;
  * Created by lichao on 17/5/2.
  */
 
-import android.content.BroadcastReceiver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -17,7 +15,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.text.TextPaint;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -28,17 +25,19 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hyphenate.chat.EMClient;
-import com.hyphenate.exceptions.EMServiceNotReadyException;
 import com.neal.adpannel.R;
 import com.neal.adpannel.ease.receiver.CallReceiver;
 import com.neal.adpannel.ease.ui.VideoCallActivity;
 import com.neal.adpannel.entity.AdEntity;
 import com.neal.adpannel.entity.EventEntity;
+import com.neal.adpannel.entity.StatusEntity;
 import com.neal.adpannel.interf.onDownLoadListener;
-import com.neal.adpannel.interf.onSwitchAd;
-import com.neal.adpannel.util.FileSave;
+import com.neal.adpannel.interf.onStatusChangedListener;
+import com.neal.adpannel.service.UDPService;
+import com.neal.adpannel.util.Downloader;
 import com.neal.adpannel.util.Logs;
 import com.neal.adpannel.util.MyVideoView;
+import com.neal.adpannel.util.NetUtil;
 import com.neal.adpannel.util.Toasts;
 
 import org.litepal.crud.DataSupport;
@@ -56,19 +55,24 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 
-public class MainActivity extends BaseActivity implements onSwitchAd {
+public class MainActivity extends BaseActivity implements onStatusChangedListener {
+
     private static final String TAG = "MainActivity";
 
+    /**
+     * 状态更新监听器
+     */
+    public static onStatusChangedListener onStatusChangedListener;
 
     /**
      * 发起视频
      */
     Button bt_connect;
-//
-//    /**
-//     * 视频广告
-//     */
-//    MyVideoView mvv_ad;
+
+    /**
+     * 是否需要重新下载资源
+     */
+    boolean isReDownload = false;
 
     /**
      * 主容器
@@ -90,7 +94,7 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
     /**
      * 文件下载器
      */
-    FileSave fileSave;
+    Downloader downloader;
 
     /**
      * 广告场景编辑事件时间戳
@@ -98,15 +102,14 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
     EventEntity eventEntity = new EventEntity();
 
     /**
-     * 广告切换器
-     */
-    onSwitchAd switcher = this;
-
-    /**
      * 当前轮播组的广告元素下标
      */
     volatile int[] indexArr;
 
+    /**
+     * 当前场景下标
+     */
+    int mSceneIndex;
 
     /**
      * 所有待下载的文件数
@@ -145,13 +148,32 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
     boolean isRecord = false;
 
     /**
+     * 场景播放时间组
+     */
+    int[] sceneTimes;
+
+    /**
+     * 主线程
+     */
+    Thread mainThread;
+
+    /**
+     * 当前广告轮播线程停止标志
+     */
+    boolean[] sceneTags;
+
+    /**
+     * 电梯状态UI组
+     */
+    TextView tv_station, tv_status, tv_direction, tv_safety, tv_overload, tv_power, tv_brk, tv_temp_hum;
+
+    /**
      * 数据库操作对象
      */
     SQLiteDatabase db;
     String str_Update = "{\"time_stamp\":\"2017101010101\"}";
-//    String str_Ad = "[{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":0,\"time_stamp\":\"1\",\"height\":525,\"width\":350,\"file_name\":\"picture1.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":3,\"banner_group\":\"333\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":525,\"time_stamp\":\"2\",\"height\":400,\"width\":800,\"file_name\":\"video1.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"left\":0,\"banner_group\":\"333\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":925,\"time_stamp\":\"3\",\"height\":525,\"width\":350,\"file_name\":\"picture2.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":4,\"banner_group\":\"222\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":925,\"time_stamp\":\"4\",\"height\":400,\"width\":800,\"file_name\":\"video2.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"banner_group\":\"222\",\"left\":350}]";
-    String str_Ad = "[{\"font_bold\":false,\"font_size\":0,\"data\":\"http://i4.buimg.com/1949/e3eb96125a1c3dd7.jpg\",\"top\":0,\"time_stamp\":\"2\",\"height\":1366,\"width\":768,\"file_name\":\"bg.jgp\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"banner_group\":\"222\"},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":220,\"time_stamp\":\"4\",\"height\":340,\"width\":585,\"file_name\":\"video2.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"banner_group\":\"333\",\"left\":90},{\"font_bold\":true,\"font_size\":30,\"data\":\"8\",\"top\":30,\"time_stamp\":\"5\",\"height\":70,\"width\":60,\"file_name\":\"video2.mp4\",\"font_color\":\"#FF0000\",\"set_type\":0,\"type\":0,\"font_family\":0,\"banner_group\":\"444\",\"left\":470}]";
-
+    //    String str_Ad = "[{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":0,\"time_stamp\":\"1\",\"height\":525,\"width\":350,\"file_name\":\"picture1.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":3,\"banner_group\":\"333\",\"scene_group\":\"1\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":525,\"time_stamp\":\"2\",\"height\":400,\"width\":800,\"file_name\":\"video1.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"left\":0,\"banner_group\":\"333\",\"scene_group\":\"1\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":925,\"time_stamp\":\"3\",\"height\":525,\"width\":350,\"file_name\":\"picture2.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":4,\"banner_group\":\"222\",\"scene_group\":\"1\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":925,\"time_stamp\":\"4\",\"height\":400,\"width\":800,\"file_name\":\"video2.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"banner_group\":\"222\",\"left\":350,\"scene_group\":\"1\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":100,\"time_stamp\":\"5\",\"height\":525,\"width\":350,\"file_name\":\"picture1.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":3,\"banner_group\":\"333\",\"scene_group\":\"2\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":625,\"time_stamp\":\"6\",\"height\":400,\"width\":800,\"file_name\":\"video1.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"left\":0,\"banner_group\":\"333\",\"scene_group\":\"2\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":1025,\"time_stamp\":\"7\",\"height\":525,\"width\":350,\"file_name\":\"picture2.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":4,\"banner_group\":\"222\",\"scene_group\":\"2\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":1025,\"time_stamp\":\"8\",\"height\":400,\"width\":800,\"file_name\":\"video2.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"banner_group\":\"222\",\"left\":350,\"scene_group\":\"2\",\"scene_time\":10}]";
+    String str_Ad = "[{\"font_bold\":false,\"font_size\":30,\"data\":\"测试数据\",\"top\":0,\"time_stamp\":\"1\",\"height\":60,\"width\":400,\"file_name\":\"picture1.jpg\",\"font_color\":\"#FF0000\",\"set_type\":0,\"type\":0,\"font_family\":0,\"left\":600,\"play_time\":3,\"banner_group\":\"333\",\"scene_group\":\"1\",\"scene_time\":10}]";
 
     @Override
     protected void onDestroy() {
@@ -181,12 +203,23 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
         IntentFilter callFilter = new IntentFilter(EMClient.getInstance().callManager().getIncomingCallBroadcastAction());
         callReceiver = new CallReceiver();
         registerReceiver(callReceiver, callFilter);
-
-
+        tv_station = (TextView) findViewById(R.id.tv_station);
+        tv_status = (TextView) findViewById(R.id.tv_status);
+        tv_brk = (TextView) findViewById(R.id.tv_brk);
+        tv_direction = (TextView) findViewById(R.id.tv_direction);
+        tv_temp_hum = (TextView) findViewById(R.id.tv_temp_hum);
+        tv_overload = (TextView) findViewById(R.id.tv_overload);
+        tv_power = (TextView) findViewById(R.id.tv_power);
+        tv_safety = (TextView) findViewById(R.id.tv_safety);
+        //开启UDP服务
+        Intent intent = new Intent(this, UDPService.class);
+        startService(intent);
     }
 
     @Override
     protected void setViews() {
+        //设置监听器
+        onStatusChangedListener = this;
         //拨打视频电话
         bt_connect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -213,7 +246,6 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
         } else {
             playElements();
         }
-
 
     }
 
@@ -244,67 +276,113 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
      * 从本地数据库中播放广告节点
      */
     private void playElements() {
-
-        //所有的节目组列表
-        final List<List<AdEntity>> allAds = new ArrayList<List<AdEntity>>();
+        //装载所有广告列表
+        //所有的场景列表
+        final List<List<AdEntity>> allScene = new ArrayList<List<AdEntity>>();
         //获取本地数据中所有节目元素
         List<AdEntity> adEntities = DataSupport.findAll(AdEntity.class);
-        //装载所有节目组ID
+        //装载所有场景ID
         AdEntity adEntity = null;
         Iterator<AdEntity> adIterator = adEntities.iterator();
-        Set<String> adGroup = new android.support.v4.util.ArraySet<String>();
+        Set<String> sceneGroup = new android.support.v4.util.ArraySet<String>();
         while (adIterator.hasNext()) {
             adEntity = adIterator.next();
-            adGroup.add(adEntity.getBanner_group());
+            sceneGroup.add(adEntity.getScene_group());
         }
-        //遍历所有节目组
-        Iterator<String> groupIdIterator = adGroup.iterator();
+        //遍历所有场景组
+        Iterator<String> groupIdIterator = sceneGroup.iterator();
         while (groupIdIterator.hasNext()) {
-            String groupId = groupIdIterator.next();
-            List<AdEntity> sigleList = DataSupport.where("banner_group = ?", groupId).find(AdEntity.class);
-            //添加该节目组至所有节目列表
-            allAds.add(sigleList);
+            String sceneId = groupIdIterator.next();
+            List<AdEntity> singleScene = DataSupport.where("scene_group = ?", sceneId).find(AdEntity.class);
+            //添加场景至所有场景列表
+            allScene.add(singleScene);
         }
-        //初始化每个节目组的节目下标
-        indexArr = new int[allAds.size()];
-        //遍历所有的节目列表
-        for (int i = 0; i < allAds.size(); i++) {
-            //当前广告组下标
-            final int currGroupIndex = i;
-            final List<AdEntity> singleList = allAds.get(i);
-            //广告素材时长
-            final int[] AdTime = new int[singleList.size()];
-            //记录时长
-            for (int j = 0; j < singleList.size(); j++) {
-                //获取当前广告元素实体类
-                AdEntity currAd = singleList.get(j);
-                //获取每个广告素材的时长，视频文件需特殊处理
-                if (currAd.getType() != 1) {
-                    AdTime[j] = currAd.getPlay_time();
-                } else {
-                    MediaPlayer player = new MediaPlayer();
-                    try {
-                        player.setDataSource(currAd.getFile_path());  //recordingFilePath（）为音频文件的路径
-                        player.prepare();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (Exception e) {
-                        e.printStackTrace();
+        //初始化场景播放时间
+        sceneTimes = new int[allScene.size()];
+        //初始化场景线程标志位
+        sceneTags = new boolean[]{true, true};
+        for (int i = 0; i < sceneTimes.length; i++) {
+            sceneTimes[i] = allScene.get(i).get(0).getScene_time();
+        }
+        //开始执行场景线程
+        mainThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //场景播放的开始时间
+                long sceneStartTime = System.currentTimeMillis();
+                //当前场景执行时间
+                long sceneCurrentTime = System.currentTimeMillis();
+                //单个场景的所有广告
+                List<AdEntity> singleSceneAds = allScene.get(mSceneIndex);
+                //单个场景的所有广告组
+                List<List<AdEntity>> allList = new ArrayList<>();
+                //装载所有节目组ID
+                AdEntity adEntity = null;
+                Iterator<AdEntity> adIterator = singleSceneAds.iterator();
+                Set<String> adGroup = new android.support.v4.util.ArraySet<String>();
+                while (adIterator.hasNext()) {
+                    adEntity = adIterator.next();
+                    adGroup.add(adEntity.getBanner_group());
+                }
+                //遍历所有节目组
+                Iterator<String> groupIdIterator = adGroup.iterator();
+                while (groupIdIterator.hasNext()) {
+                    String groupId = groupIdIterator.next();
+                    List<AdEntity> singleList = DataSupport.where("banner_group = ? and scene_group = ?", groupId, singleSceneAds.get(0).getScene_group()).find(AdEntity.class);
+                    //添加该节目组至所有节目列表
+                    allList.add(singleList);
+                }
+                //初始化每个节目组的节目下标
+                indexArr = new int[allList.size()];
+                //遍历所有的节目列表
+                for (int i = 0; i < allList.size(); i++) {
+                    //当前广告组下标
+                    final int currGroupIndex = i;
+                    final List<AdEntity> singleList = allList.get(i);
+                    //广告素材时长
+                    final int[] AdTime = new int[singleList.size()];
+                    //记录时长
+                    for (int j = 0; j < singleList.size(); j++) {
+                        //获取当前广告元素实体类
+                        AdEntity currAd = singleList.get(j);
+                        //获取每个广告素材的时长，视频文件需特殊处理
+                        if (currAd.getType() != 1) {
+                            AdTime[j] = currAd.getPlay_time();
+                        } else {
+                            MediaPlayer player = new MediaPlayer();
+                            try {
+                                player.setDataSource(currAd.getFile_path());  //recordingFilePath（）为音频文件的路径
+                                player.prepare();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            double duration = player.getDuration();//获取音频的时间
+                            Logs.d("ACETEST", "### duration: " + duration);
+                            player.release();//释放资源
+                            AdTime[j] = (int) duration;
+                        }
                     }
-                    double duration = player.getDuration();//获取音频的时间
-                    Logs.d("ACETEST", "### duration: " + duration);
-                    player.release();//释放资源
-                    AdTime[j] = (int) duration;
-
+                    //启动广告轮播线程
+                    excuteAdTask(singleList, currGroupIndex, AdTime, mSceneIndex);
+                }
+                while (true) {
+                    //判断是否进入下一场景
+                    sceneCurrentTime = System.currentTimeMillis();
+                    if ((sceneCurrentTime - sceneStartTime) / 1000 >= sceneTimes[mSceneIndex]) {
+                        //切换场景
+                        switchScene(allScene, mSceneIndex);
+                        //重新计时
+                        sceneStartTime = System.currentTimeMillis();
+                    }
                 }
             }
-            //启动广告轮播线程
-            excuteAdTask(singleList, currGroupIndex, AdTime);
+        });
 
-        }
-
-
+        mainThread.start();
     }
+
 
     /**
      * 执行轮播广告的任务
@@ -312,10 +390,10 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
      * @param singleList     广告组
      * @param currGroupIndex 当前广告组下标
      * @param AdTime         广告播放时长
+     * @param sceneIndex     广告组所属的场景
      */
-    private void excuteAdTask(final List<AdEntity> singleList, final int currGroupIndex, final int[] AdTime) {
-
-        //有死循环，开启线程
+    private void excuteAdTask(final List<AdEntity> singleList, final int currGroupIndex, final int[] AdTime, final int sceneIndex) {
+        //开启线程
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -325,7 +403,7 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
                 long startTime = System.currentTimeMillis();
 
                 //开始循环
-                while (true) {
+                while (sceneTags[sceneIndex]) {
                     //广告暂停，线程挂起
                     if (isPaused) {
                         synchronized (lock) {
@@ -340,13 +418,12 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
 
                     //如果是初次运行则直接播放
                     if (isFirst) {
-                        //切换场景
-                        switcher.onSwitch(singleList, indexArr[currGroupIndex]);
+                        //切换广告
+                        switchAd(singleList, indexArr[currGroupIndex]);
                         //重新开始计算任务开始时间
                         startTime = System.currentTimeMillis();
                         //非初次了
                         isFirst = false;
-
                     }
                     //记录任务当前时间
                     long currentTime = System.currentTimeMillis();
@@ -360,11 +437,10 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
                             //循环
                             if (indexArr[currGroupIndex] == AdTime.length)
                                 indexArr[currGroupIndex] = 0;
-                            //切换场景
-                            switcher.onSwitch(singleList, indexArr[currGroupIndex]);
+                            //切换广告
+                            switchAd(singleList, indexArr[currGroupIndex]);
                             //重新开始计算任务开始时间
                             startTime = System.currentTimeMillis();
-
                         }
                     } else {
                         //判断是否切换广告元素，视频
@@ -375,18 +451,15 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
                             if (indexArr[currGroupIndex] == AdTime.length)
                                 indexArr[currGroupIndex] = 0;
                             //切换场景
-                            switcher.onSwitch(singleList, indexArr[currGroupIndex]);
+                            switchAd(singleList, indexArr[currGroupIndex]);
                             //重新开始计算任务开始时间
                             startTime = System.currentTimeMillis();
-
                         }
                     }
-
-
                 }
             }
-        }).start();
 
+        }).start();
     }
 
     /**
@@ -425,15 +498,19 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
                     //待下载文件数 + 1
                     allFiles++;
                     //设置视频下载器回调
-                    fileSave = new FileSave(this);
+                    downloader = new Downloader(this);
                     //下载视频并保存，返回本地储存的文件对象
-                    fileSave.saveFile(context.getFilesDir().getAbsolutePath(), adEntity.getFile_name(), adEntity.getData(), new onDownLoadListener() {
+                    downloader.saveFile(context.getFilesDir().getAbsolutePath(), adEntity.getFile_name(), adEntity.getData(), new onDownLoadListener() {
                         @Override
                         public void success(File data) {
                             //下载成功，待下载文件数 -1
                             allFiles--;
                             //所有文件下载完毕，开始播放呀！
                             if (allFiles == 0) {
+                                //缓存广告编辑事件时间戳
+                                ContentValues values = new ContentValues();
+                                values.put("time_stamp", "2017101010101");
+                                DataSupport.update(EventEntity.class, values, 1);
                                 playElements();
                             }
                         }
@@ -452,15 +529,19 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
                     //待下载文件数 + 1
                     allFiles++;
                     //设置图片下载器回调
-                    fileSave = new FileSave(this);
+                    downloader = new Downloader(this);
                     //下载图片并保存，返回本地储存的文件对象
-                    fileSave.saveFile(context.getFilesDir().getAbsolutePath(), adEntity.getFile_name(), adEntity.getData(), new onDownLoadListener() {
+                    downloader.saveFile(context.getFilesDir().getAbsolutePath(), adEntity.getFile_name(), adEntity.getData(), new onDownLoadListener() {
                         @Override
                         public void success(File data) {
                             //下载成功，待下载文件数 -1
                             allFiles--;
                             //所有文件下载完毕，开始播放呀！
                             if (allFiles == 0) {
+                                //缓存广告编辑事件时间戳
+                                ContentValues values = new ContentValues();
+                                values.put("time_stamp", "2017101010101");
+                                DataSupport.update(EventEntity.class, values, 1);
                                 playElements();
                             }
                         }
@@ -481,10 +562,7 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
                     break;
             }
 
-            //缓存广告编辑事件时间戳
-            ContentValues values = new ContentValues();
-            values.put("time_stamp", "2017101010101");
-            DataSupport.update(EventEntity.class, values, 1);
+
             //
 
         }
@@ -551,9 +629,135 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
         return null;
     }
 
+    /**
+     * 切换场景
+     *
+     * @param allScene 所有场景的广告组
+     * @param index    当前场景下标
+     */
+    public void switchScene(List<List<AdEntity>> allScene, int index) {
+        //设置场景所属线程的标志位
+        sceneTags[index] = false;
+        //遍历屏蔽当前场景元素
+        for (int i = 0; i < allScene.get(index).size(); i++) {
+            switch (allScene.get(index).get(i).getType()) {
+                //文本
+                case 0:
+                    //找到该子View，屏蔽
+                    final TextView tv_ad = (TextView) fm_container.findViewWithTag(allScene.get(index).get(i).getTime_stamp());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (tv_ad != null)
+                                fm_container.removeView(tv_ad);
+                        }
+                    });
+                    break;
+                //视频
+                case 1:
+                    //找到该子View，屏蔽
+                    final MyVideoView mvv_ad = (MyVideoView) fm_container.findViewWithTag(allScene.get(index).get(i).getTime_stamp());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mvv_ad != null)
+                                fm_container.removeView(mvv_ad);
+                        }
+                    });
+                    break;
+                //图片
+                case 2:
+                    //找到该子View，屏蔽
+                    final ImageView iv_ad = (ImageView) fm_container.findViewWithTag(allScene.get(index).get(i).getTime_stamp());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (iv_ad != null)
+                                fm_container.removeView(iv_ad);
+                        }
+                    });
+                    break;
+                //pdf
+                case 3:
+                    break;
+                //word
+                case 4:
 
-    @Override
-    public void onSwitch(final List<AdEntity> singleList, int index) {
+                    break;
+            }
+        }
+        //播放下一场景
+        mSceneIndex++;
+        if (mSceneIndex == allScene.size()) {
+            mSceneIndex = 0;
+        }
+        //下一场景线程标志位启动
+        sceneTags[mSceneIndex] = true;
+        //单个场景的所有广告
+        List<AdEntity> singleSceneAds = allScene.get(mSceneIndex);
+        //单个场景的所有广告组
+        List<List<AdEntity>> allList = new ArrayList<>();
+        //装载所有节目组ID
+        AdEntity adEntity = null;
+        Iterator<AdEntity> adIterator = singleSceneAds.iterator();
+        Set<String> adGroup = new android.support.v4.util.ArraySet<String>();
+        while (adIterator.hasNext()) {
+            adEntity = adIterator.next();
+            adGroup.add(adEntity.getBanner_group());
+        }
+        //遍历所有节目组
+        Iterator<String> groupIdIterator = adGroup.iterator();
+        while (groupIdIterator.hasNext()) {
+            String groupId = groupIdIterator.next();
+            List<AdEntity> singleList = DataSupport.where("banner_group = ? and scene_group = ?", groupId, singleSceneAds.get(0).getScene_group()).find(AdEntity.class);
+            //添加该节目组至所有节目列表
+            allList.add(singleList);
+        }
+        //初始化每个节目组的节目下标
+        indexArr = new int[allList.size()];
+        //遍历所有的节目列表
+        for (int i = 0; i < allList.size(); i++) {
+            //当前广告组下标
+            final int currGroupIndex = i;
+            final List<AdEntity> singleList = allList.get(i);
+            //广告素材时长
+            final int[] AdTime = new int[singleList.size()];
+            //记录时长
+            for (int j = 0; j < singleList.size(); j++) {
+                //获取当前广告元素实体类
+                AdEntity currAd = singleList.get(j);
+                //获取每个广告素材的时长，视频文件需特殊处理
+                if (currAd.getType() != 1) {
+                    AdTime[j] = currAd.getPlay_time();
+                } else {
+                    MediaPlayer player = new MediaPlayer();
+                    try {
+                        player.setDataSource(currAd.getFile_path());  //recordingFilePath（）为音频文件的路径
+                        player.prepare();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    double duration = player.getDuration();//获取音频的时间
+                    Logs.d("ACETEST", "### duration: " + duration);
+                    player.release();//释放资源
+                    AdTime[j] = (int) duration;
+                }
+            }
+            //启动广告轮播线程
+            excuteAdTask(singleList, currGroupIndex, AdTime, mSceneIndex);
+        }
+
+    }
+
+    /**
+     * 轮播一组广告
+     *
+     * @param singleList 广告组
+     * @param index      当前广告组中的广告下标
+     */
+    public void switchAd(final List<AdEntity> singleList, int index) {
 
         //获取当前广告元素
         final AdEntity currAd = singleList.get(index);
@@ -631,7 +835,6 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
                             TextPaint paint = tv_ad.getPaint();
                             paint.setFakeBoldText(true);
                         }
-
                         //设置字体大小
                         tv_ad.setTextSize(currAd.getFont_size());
                         //设置字体颜色
@@ -861,4 +1064,99 @@ public class MainActivity extends BaseActivity implements onSwitchAd {
         return true;
     }
 
+
+    @Override
+    public void onNetChange(int netMobile) {
+        //网络状态变化时的操作
+        if (netMobile == NetUtil.NETWORK_NONE) {
+            //失去连接,判断文件是否重新下载
+            if (allFiles != 0) {
+                isReDownload = true;
+            }
+        } else {
+            //重新下载资源
+            if (isReDownload) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+//                    saveElements(getJson("http://192.168.1.106:8000/api/mips/material/"));
+                        saveElements(str_Ad);
+                        //重置下载标志位
+                        isReDownload = false;
+                    }
+                }).start();
+            }
+        }
+    }
+
+    @Override
+    public void update(final StatusEntity status) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                switch (status.getSafety()) {
+                    case 0:
+                        tv_safety.setText("安全回路:闭合");
+                        break;
+                    case 1:
+                        tv_safety.setText("安全回路:断开");
+                        break;
+                }
+
+                tv_station.setText("当前楼层:" + status.getStation());
+
+                switch (status.getStatus()) {
+                    case 0:
+                        tv_status.setText("运行状态:正常");
+                        break;
+                    case 1:
+                        tv_status.setText("运行状态:检修");
+                        break;
+                }
+
+                switch (status.getDirection()) {
+                    case 0:
+                        tv_direction.setText("运行方向:停止");
+                        break;
+                    case 1:
+                        tv_direction.setText("运行方向:上行");
+                        break;
+                    case 2:
+                        tv_direction.setText("运行方向:下行");
+                        break;
+                }
+
+                switch (status.getOverload()) {
+                    case 0:
+                        tv_overload.setText("载重状态:超载");
+                        break;
+                    case 1:
+                        tv_overload.setText("载重状态:正常");
+                        break;
+                }
+
+                switch (status.getPower()) {
+                    case 0:
+                        tv_power.setText("系统电源:正常");
+                        break;
+                    case 1:
+                        tv_power.setText("系统电源:掉电");
+                        break;
+                }
+
+                switch (status.getBrk()) {
+                    case 0:
+                        tv_brk.setText("抱闸状态:闭合");
+                        break;
+                    case 1:
+                        tv_brk.setText("抱闸状态:放开");
+                        break;
+                }
+
+                tv_temp_hum.setText("温度/湿度:" + status.getTemp() + "℃/" + status.getHum() + "%");
+
+            }
+        });
+
+    }
 }

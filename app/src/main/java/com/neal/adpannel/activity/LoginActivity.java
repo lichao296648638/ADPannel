@@ -7,7 +7,6 @@ package com.neal.adpannel.activity;
 import android.annotation.TargetApi;
 import android.app.admin.DevicePolicyManager;
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -16,14 +15,11 @@ import android.widget.EditText;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
 import com.neal.adpannel.R;
+import com.neal.adpannel.service.UDPService;
 import com.neal.adpannel.service.WakeService;
 import com.neal.adpannel.util.DeviceUtil;
 import com.neal.adpannel.util.Logs;
 import com.neal.adpannel.util.Toasts;
-
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
 
 public class LoginActivity extends BaseActivity {
 
@@ -81,7 +77,6 @@ public class LoginActivity extends BaseActivity {
         requestPermissions();
         loginActivity = this;
         wakeInent = new Intent(this, WakeService.class);
-
     }
 
     @Override
@@ -183,47 +178,8 @@ public class LoginActivity extends BaseActivity {
         return true;
     }
 
+    @Override
+    public void onNetChange(int netMobile) {
 
-    private void shutDown() {
-        Intent intent = new Intent("android.intent.action.ACTION_REQUEST_SHUTDOWN");
-        intent.putExtra("android.intent.extra.KEY_CONFIRM", false);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
     }
-
-
-    static Process createSuProcess() throws IOException {
-        File rootUser = new File("/system/xbin/ru");
-        if (rootUser.exists()) {
-            return Runtime.getRuntime().exec(rootUser.getAbsolutePath());
-        } else {
-            return Runtime.getRuntime().exec("su");
-        }
-    }
-
-    /**
-     * 关机
-     */
-    static Process createSuProcess(String cmd) throws IOException {
-
-        DataOutputStream os = null;
-        Process process = createSuProcess();
-
-        try {
-            os = new DataOutputStream(process.getOutputStream());
-            os.writeBytes(cmd + "\n");
-            os.writeBytes("exit $?\n");
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                }
-            }
-        }
-
-        return process;
-    }
-
-
 }

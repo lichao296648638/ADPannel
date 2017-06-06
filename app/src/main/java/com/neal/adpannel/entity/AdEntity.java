@@ -26,6 +26,8 @@ public class AdEntity extends DataSupport {
      * left : 0
      * play_time : 3
      * banner_group : 20203
+     * scene_group : 202020202
+     * scene_time : 33
      */
 
     private boolean font_bold;
@@ -43,6 +45,36 @@ public class AdEntity extends DataSupport {
     private int left;
     private int play_time;
     private String banner_group;
+    private String scene_group;
+    private int scene_time;
+    private int file_length;
+
+
+    public int getFile_length() {
+        return file_length;
+    }
+
+    public void setFile_length(int file_length) {
+        this.file_length = file_length;
+    }
+
+
+    public String getScene_group() {
+        return scene_group;
+    }
+
+    public void setScene_group(String scene_group) {
+        this.scene_group = scene_group;
+    }
+
+    public int getScene_time() {
+        return scene_time;
+    }
+
+    public void setScene_time(int scene_time) {
+        this.scene_time = scene_time;
+    }
+
 
     public String getFile_path() {
         return file_path;

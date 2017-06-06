@@ -20,13 +20,13 @@ import java.net.URLConnection;
  * Created by lichao on 17/5/10.
  */
 
-public class FileSave {
-    private static final String TAG = "FileSave";
+public class Downloader {
+    private static final String TAG = "Downloader";
 
     private Activity mActivity;
 
 
-    public FileSave(Activity activity){
+    public Downloader(Activity activity){
         mActivity = activity;
     }
 
