@@ -23,8 +23,7 @@ import com.hyphenate.chat.EMMessage.Status;
 import com.hyphenate.chat.EMTextMessageBody;
 
 import com.hyphenate.exceptions.EMServiceNotReadyException;
-import com.hyphenate.media.EMLocalSurfaceView;
-import com.hyphenate.media.EMOppositeSurfaceView;
+import com.hyphenate.media.*;
 import com.hyphenate.util.EMLog;
 import com.neal.adpannel.R;
 import com.neal.adpannel.ease.Constant;
@@ -51,8 +50,8 @@ public class CallActivity extends Activity {
     protected Ringtone ringtone;
     protected int outgoing;
     protected EMCallStateChangeListener callStateListener;
-    protected EMLocalSurfaceView localSurface;
-    protected EMOppositeSurfaceView oppositeSurface;
+    protected EMCallSurfaceView localSurface;
+    protected EMCallSurfaceView oppositeSurface;
     protected boolean isAnswered = false;
     protected int streamID = -1;
 

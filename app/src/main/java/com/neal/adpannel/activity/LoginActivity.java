@@ -162,21 +162,18 @@ public class LoginActivity extends BaseActivity {
     }
 
 
-
     @TargetApi(23)
     private void requestPermissions() {
         // 申请管理权限
         DeviceUtil.initLockScreen(this);
-
-
     }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Toasts.makeText("您按下的按键键值为:" + keyCode);
-        Logs.i(TAG,"onKeyDown event.getRepeatCount() "+event.getRepeatCount());
-        return true;
-    }
+//
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        Toasts.makeText("您按下的按键键值为:" + keyCode);
+//        Logs.i(TAG,"onKeyDown event.getRepeatCount() "+event.getRepeatCount());
+//        return true;
+//    }
 
     @Override
     public void onNetChange(int netMobile) {

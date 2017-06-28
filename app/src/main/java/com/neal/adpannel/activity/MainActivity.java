@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.support.v4.util.ArraySet;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -22,6 +23,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hyphenate.chat.EMClient;
@@ -64,10 +66,6 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
      */
     public static onStatusChangedListener onStatusChangedListener;
 
-    /**
-     * 发起视频
-     */
-    Button bt_connect;
 
     /**
      * 是否需要重新下载资源
@@ -165,15 +163,25 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
     /**
      * 电梯状态UI组
      */
-    TextView tv_station, tv_status, tv_direction, tv_safety, tv_overload, tv_power, tv_brk, tv_temp_hum;
+    TextView tv_station, tv_status, tv_safety, tv_overload, tv_power, tv_brk, tv_temp_hum;
+
+    /**
+     * 左右箭头
+     */
+    ImageView iv_arrow_left, iv_arrow_right;
+
+    /**
+     * 上次方向状态 0停 1上 2下
+     */
+    int lastState;
 
     /**
      * 数据库操作对象
      */
     SQLiteDatabase db;
     String str_Update = "{\"time_stamp\":\"2017101010101\"}";
-    //    String str_Ad = "[{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":0,\"time_stamp\":\"1\",\"height\":525,\"width\":350,\"file_name\":\"picture1.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":3,\"banner_group\":\"333\",\"scene_group\":\"1\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":525,\"time_stamp\":\"2\",\"height\":400,\"width\":800,\"file_name\":\"video1.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"left\":0,\"banner_group\":\"333\",\"scene_group\":\"1\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":925,\"time_stamp\":\"3\",\"height\":525,\"width\":350,\"file_name\":\"picture2.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":4,\"banner_group\":\"222\",\"scene_group\":\"1\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":925,\"time_stamp\":\"4\",\"height\":400,\"width\":800,\"file_name\":\"video2.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"banner_group\":\"222\",\"left\":350,\"scene_group\":\"1\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":100,\"time_stamp\":\"5\",\"height\":525,\"width\":350,\"file_name\":\"picture1.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":3,\"banner_group\":\"333\",\"scene_group\":\"2\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":625,\"time_stamp\":\"6\",\"height\":400,\"width\":800,\"file_name\":\"video1.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"left\":0,\"banner_group\":\"333\",\"scene_group\":\"2\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1494521130900&di=64c531e9e45405e07fb819346f9f8a5d&imgtype=0&src=http%3A%2F%2Fstock.591hx.com%2Fimages%2Fhnimg%2F20151208%2F18%2F6463988493360928614.jpg\",\"top\":1025,\"time_stamp\":\"7\",\"height\":525,\"width\":350,\"file_name\":\"picture2.jpg\",\"font_color\":\"\",\"set_type\":0,\"type\":2,\"font_family\":0,\"left\":0,\"play_time\":4,\"banner_group\":\"222\",\"scene_group\":\"2\",\"scene_time\":10},{\"font_bold\":false,\"font_size\":0,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"top\":1025,\"time_stamp\":\"8\",\"height\":400,\"width\":800,\"file_name\":\"video2.mp4\",\"font_color\":\"\",\"set_type\":0,\"type\":1,\"font_family\":0,\"banner_group\":\"222\",\"left\":350,\"scene_group\":\"2\",\"scene_time\":10}]";
-    String str_Ad = "[{\"font_bold\":false,\"font_size\":30,\"data\":\"测试数据\",\"top\":0,\"time_stamp\":\"1\",\"height\":60,\"width\":400,\"file_name\":\"picture1.jpg\",\"font_color\":\"#FF0000\",\"set_type\":0,\"type\":0,\"font_family\":0,\"left\":600,\"play_time\":3,\"banner_group\":\"333\",\"scene_group\":\"1\",\"scene_time\":10}]";
+    String str_Ad = "[{\"type\":2,\"width\":768,\"height\":1366,\"left\":0,\"top\":0,\"data\":\"https://ooo.0o0.ooo/2017/06/27/59521bf1612a3.jpg\",\"file_name\":\"image.jpg\",\"time_stamp\":\"image\",\"banner_group\":\"2\",\"scene_group\":\"111\"},{\"type\":1,\"height\":350,\"width\":550,\"left\":110,\"top\":340,\"data\":\"http://flv2.bn.netease.com/videolib3/1604/28/fVobI0704/SD/fVobI0704-mobile.mp4\",\"file_name\":\"video.mp4\",\"time_stamp\":\"video\",\"banner_group\":\"222\",\"scene_group\":\"111\"}]";
+//    String str_Ad = "[{\"font_bold\":false,\"font_size\":30,\"data\":\"测试数据\",\"top\":0,\"time_stamp\":\"1\",\"height\":60,\"width\":400,\"file_name\":\"picture1.jpg\",\"font_color\":\"#FF0000\",\"set_type\":0,\"type\":0,\"font_family\":0,\"left\":600,\"play_time\":3,\"banner_group\":\"333\",\"scene_group\":\"1\",\"scene_time\":10}]";
 
     @Override
     protected void onDestroy() {
@@ -196,7 +204,8 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
 
     @Override
     protected void initViews() {
-        bt_connect = (Button) findViewById(R.id.bt_connect);
+        //设置监听器
+        onStatusChangedListener = this;
 //        mvv_ad = (MyVideoView) findViewById(R.id.mvv_ad);
         fm_container = (FrameLayout) findViewById(R.id.fm_container);
         //监听呼入电话
@@ -206,11 +215,13 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
         tv_station = (TextView) findViewById(R.id.tv_station);
         tv_status = (TextView) findViewById(R.id.tv_status);
         tv_brk = (TextView) findViewById(R.id.tv_brk);
-        tv_direction = (TextView) findViewById(R.id.tv_direction);
         tv_temp_hum = (TextView) findViewById(R.id.tv_temp_hum);
         tv_overload = (TextView) findViewById(R.id.tv_overload);
         tv_power = (TextView) findViewById(R.id.tv_power);
         tv_safety = (TextView) findViewById(R.id.tv_safety);
+        tv_status = (TextView) findViewById(R.id.tv_status);
+        iv_arrow_left = (ImageView) findViewById(R.id.iv_arrow_left);
+        iv_arrow_right = (ImageView) findViewById(R.id.iv_arrow_right);
         //开启UDP服务
         Intent intent = new Intent(this, UDPService.class);
         startService(intent);
@@ -218,15 +229,6 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
 
     @Override
     protected void setViews() {
-        //设置监听器
-        onStatusChangedListener = this;
-        //拨打视频电话
-        bt_connect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startVideoCall();
-            }
-        });
 //
 //        mvv_ad.setVideoPath("/storage/emulated/0/Movies/cf752b1c12ce452b3040cab2f90bc265_h264818000nero_aac32-1.mp4");
 //        //让videoView获得焦点
@@ -267,7 +269,7 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
         if (!EMClient.getInstance().isConnected())
             Toasts.makeText(getResources().getString(R.string.not_connect_to_server));
         else {
-            startActivity(new Intent(this, VideoCallActivity.class).putExtra("username", "296648637")
+            startActivity(new Intent(this, VideoCallActivity.class).putExtra("username", "637")
                     .putExtra("isComingCall", false));
         }
     }
@@ -284,7 +286,7 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
         //装载所有场景ID
         AdEntity adEntity = null;
         Iterator<AdEntity> adIterator = adEntities.iterator();
-        Set<String> sceneGroup = new android.support.v4.util.ArraySet<String>();
+        Set<String> sceneGroup = new ArraySet<>();
         while (adIterator.hasNext()) {
             adEntity = adIterator.next();
             sceneGroup.add(adEntity.getScene_group());
@@ -300,7 +302,10 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
         //初始化场景播放时间
         sceneTimes = new int[allScene.size()];
         //初始化场景线程标志位
-        sceneTags = new boolean[]{true, true};
+        sceneTags = new boolean[allScene.size()];
+        for (int i = 0; i < sceneTags.length; i++) {
+            sceneTags[i] = true;
+        }
         for (int i = 0; i < sceneTimes.length; i++) {
             sceneTimes[i] = allScene.get(i).get(0).getScene_time();
         }
@@ -319,7 +324,7 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
                 //装载所有节目组ID
                 AdEntity adEntity = null;
                 Iterator<AdEntity> adIterator = singleSceneAds.iterator();
-                Set<String> adGroup = new android.support.v4.util.ArraySet<String>();
+                Set<String> adGroup = new ArraySet<>();
                 while (adIterator.hasNext()) {
                     adEntity = adIterator.next();
                     adGroup.add(adEntity.getBanner_group());
@@ -367,7 +372,7 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
                     //启动广告轮播线程
                     excuteAdTask(singleList, currGroupIndex, AdTime, mSceneIndex);
                 }
-                while (true) {
+                while (allScene.size() != 1) {
                     //判断是否进入下一场景
                     sceneCurrentTime = System.currentTimeMillis();
                     if ((sceneCurrentTime - sceneStartTime) / 1000 >= sceneTimes[mSceneIndex]) {
@@ -429,6 +434,9 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
                     long currentTime = System.currentTimeMillis();
                     //任务已运行时间
                     long elapsedTime = currentTime - startTime;
+                    //轮播组只有一条广告，不切换
+                    if (singleList.size() == 1)
+                        return;
                     //判断是否切换广告元素，非视频
                     if (singleList.get(indexArr[currGroupIndex]).getType() != 1) {
                         if (elapsedTime >= AdTime[indexArr[currGroupIndex]] * 1000) {
@@ -473,7 +481,8 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
         List<AdEntity> adEntities = gson.fromJson(json,
                 new TypeToken<List<AdEntity>>() {
                 }.getType());
-
+        //总元素个数
+        allFiles = adEntities.size();
         //获取广告元素列表遍历器
         final Iterator<AdEntity> iterator = adEntities.iterator();
         //开始遍历
@@ -488,15 +497,22 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
             switch (adEntity.getType()) {
                 //文字
                 case 0:
+                    allFiles--;
                     adEntity.save();
+                    //所有文件下载完毕，开始播放呀！
+                    if (allFiles == 0) {
+                        //缓存广告编辑事件时间戳
+                        ContentValues values = new ContentValues();
+                        values.put("time_stamp", "2017101010101");
+                        DataSupport.update(EventEntity.class, values, 1);
+                        playElements();
+                    }
                     break;
                 //视频
                 case 1:
                     //文件路径入库
                     adEntity.setFile_path(context.getFilesDir().getAbsolutePath() + "/" + adEntity.getFile_name());
                     adEntity.save();
-                    //待下载文件数 + 1
-                    allFiles++;
                     //设置视频下载器回调
                     downloader = new Downloader(this);
                     //下载视频并保存，返回本地储存的文件对象
@@ -526,8 +542,6 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
                     //文件路径入库
                     adEntity.setFile_path(context.getFilesDir().getAbsolutePath() + "/" + adEntity.getFile_name());
                     adEntity.save();
-                    //待下载文件数 + 1
-                    allFiles++;
                     //设置图片下载器回调
                     downloader = new Downloader(this);
                     //下载图片并保存，返回本地储存的文件对象
@@ -758,7 +772,6 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
      * @param index      当前广告组中的广告下标
      */
     public void switchAd(final List<AdEntity> singleList, int index) {
-
         //获取当前广告元素
         final AdEntity currAd = singleList.get(index);
         //设置大小和位置
@@ -1103,7 +1116,28 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
                         break;
                 }
 
-                tv_station.setText("当前楼层:" + status.getStation());
+                String station = "0";
+
+
+                if (status.getStation() <= 6) {
+                    station = status.getStation() + "";
+                    if (status.getStation() == 1) {
+                        station = "M";
+                    }
+
+                    if (status.getStation() == 0) {
+                        station = "1";
+                    }
+
+                    if (status.getStation() == 6) {
+                        station = "7";
+                    }
+                }
+
+                if (status.getStation() > 6) {
+                    station = status.getStation() + 2 + "";
+                }
+                tv_station.setText(station);
 
                 switch (status.getStatus()) {
                     case 0:
@@ -1115,23 +1149,41 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
                 }
 
                 switch (status.getDirection()) {
+                    //停止
                     case 0:
-                        tv_direction.setText("运行方向:停止");
+                        if (lastState == 1) {
+                            Glide.with(MainActivity.this).load(R.drawable.up_yellow).into(iv_arrow_left);
+                            Glide.with(MainActivity.this).load(R.drawable.down_green).into(iv_arrow_right);
+                        } else if (lastState == 2) {
+                            Glide.with(MainActivity.this).load(R.drawable.up_green).into(iv_arrow_left);
+                            Glide.with(MainActivity.this).load(R.drawable.down_yellow).into(iv_arrow_right);
+                        }
+                        lastState = 0;
                         break;
+                    //上行
                     case 1:
-                        tv_direction.setText("运行方向:上行");
+                        if (lastState != 1) {
+                            Glide.with(MainActivity.this).load(R.drawable.up_anim).into(iv_arrow_left);
+                            Glide.with(MainActivity.this).load(R.drawable.down_green).into(iv_arrow_right);
+                        }
+                        lastState = 1;
                         break;
+                    //下行
                     case 2:
-                        tv_direction.setText("运行方向:下行");
+                        if (lastState != 2) {
+                            Glide.with(MainActivity.this).load(R.drawable.up_green).into(iv_arrow_left);
+                            Glide.with(MainActivity.this).load(R.drawable.down_anim).into(iv_arrow_right);
+                        }
+                        lastState = 2;
                         break;
                 }
 
                 switch (status.getOverload()) {
                     case 0:
-                        tv_overload.setText("载重状态:超载");
+                        tv_overload.setText("载重状态:正常");
                         break;
                     case 1:
-                        tv_overload.setText("载重状态:正常");
+                        tv_overload.setText("载重状态:超载");
                         break;
                 }
 
@@ -1146,10 +1198,10 @@ public class MainActivity extends BaseActivity implements onStatusChangedListene
 
                 switch (status.getBrk()) {
                     case 0:
-                        tv_brk.setText("抱闸状态:闭合");
+                        tv_brk.setText("制动器:断开");
                         break;
                     case 1:
-                        tv_brk.setText("抱闸状态:放开");
+                        tv_brk.setText("制动器:闭合");
                         break;
                 }
 

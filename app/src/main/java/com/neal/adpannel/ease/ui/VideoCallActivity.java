@@ -1,10 +1,10 @@
 package com.neal.adpannel.ease.ui; /**
  * Copyright (C) 2016 Hyphenate Inc. All rights reserved.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,8 +42,7 @@ import com.hyphenate.chat.EMCallManager.EMVideoCallHelper;
 import com.hyphenate.chat.EMCallStateChangeListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.exceptions.HyphenateException;
-import com.hyphenate.media.EMLocalSurfaceView;
-import com.hyphenate.media.EMOppositeSurfaceView;
+import com.hyphenate.media.EMCallSurfaceView;
 import com.hyphenate.util.EMLog;
 import com.neal.adpannel.R;
 import com.neal.adpannel.ease.DemoHelper;
@@ -101,6 +100,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
     // dynamic adjust brightness
     class BrightnessDataProcess implements EMCameraDataProcessor {
         byte yDelta = 0;
+
         synchronized void setYDelta(byte yDelta) {
             Log.d("VideoCallActivity", "brigntness uDelta:" + yDelta);
             this.yDelta = yDelta;
@@ -116,7 +116,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
                 int d = (data[i] & 0xFF) + yDelta;
                 d = d < 16 ? 16 : d;
                 d = d > 235 ? 235 : d;
-                data[i] = (byte)d;
+                data[i] = (byte) d;
             }
         }
     }
@@ -124,7 +124,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             finish();
             return;
         }
@@ -181,12 +181,12 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
         nickTextView.setText(username);
 
         // local surfaceview
-        localSurface = (EMLocalSurfaceView) findViewById(R.id.local_surface);
+        localSurface = (EMCallSurfaceView) findViewById(R.id.local_surface);
         localSurface.setZOrderMediaOverlay(true);
         localSurface.setZOrderOnTop(true);
 
         // remote surfaceview
-        oppositeSurface = (EMOppositeSurfaceView) findViewById(R.id.opposite_surface);
+        oppositeSurface = (EMCallSurfaceView) findViewById(R.id.opposite_surface);
 
         // set call state listener
         addCallStateListener();
@@ -208,7 +208,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
         } else { // incoming call
 
             callStateTextView.setText("Ringing");
-            if(EMClient.getInstance().callManager().getCallState() == EMCallStateChangeListener.CallState.IDLE
+            if (EMClient.getInstance().callManager().getCallState() == EMCallStateChangeListener.CallState.IDLE
                     || EMClient.getInstance().callManager().getCallState() == EMCallStateChangeListener.CallState.DISCONNECTED) {
                 // the call has ended
                 finish();
@@ -238,7 +238,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
 
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            dataProcessor.setYDelta((byte)(20.0f * (progress - 50) / 50.0f));
+            dataProcessor.setYDelta((byte) (20.0f * (progress - 50) / 50.0f));
         }
 
         @Override
@@ -277,8 +277,21 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
                             @Override
                             public void run() {
                                 if (!isInCalling) {
-                                    EMClient.getInstance().callManager().switchCamera();
-                                }
+                                    EMLog.d(TAG, "btn_answer_call clicked");
+                                    answerBtn.setEnabled(false);
+                                    openSpeakerOn();
+                                    if (ringtone != null)
+                                        ringtone.stop();
+
+                                    callStateTextView.setText("answering...");
+                                    handler.sendEmptyMessage(MSG_CALL_ANSWER);
+                                    handsFreeImage.setImageResource(R.drawable.em_icon_speaker_on);
+                                    isAnswered = true;
+                                    isHandsfreeState = true;
+                                    comingBtnContainer.setVisibility(View.INVISIBLE);
+                                    hangupBtn.setVisibility(View.VISIBLE);
+                                    voiceContronlLayout.setVisibility(View.VISIBLE);
+                                    localSurface.setVisibility(View.VISIBLE);                                }
 //                            callStateTextView.setText(R.string.have_connected_with);
                             }
 
@@ -298,7 +311,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
                                 } catch (Exception e) {
                                 }
                                 openSpeakerOn();
-                                ((TextView)findViewById(R.id.tv_is_p2p)).setText(EMClient.getInstance().callManager().isDirectCall()
+                                ((TextView) findViewById(R.id.tv_is_p2p)).setText(EMClient.getInstance().callManager().isDirectCall()
                                         ? R.string.direct_call : R.string.relay_call);
                                 handsFreeImage.setImageResource(R.drawable.em_icon_speaker_on);
                                 isHandsfreeState = true;
@@ -312,6 +325,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
 //                            recordBtn.setVisibility(View.VISIBLE);
                                 callingState = CallingState.NORMAL;
                                 startMonitor();
+                                EMClient.getInstance().callManager().switchCamera();
                             }
 
                         });
@@ -328,9 +342,9 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
                         runOnUiThread(new Runnable() {
                             public void run() {
                                 netwrokStatusVeiw.setVisibility(View.VISIBLE);
-                                if(error == CallError.ERROR_NO_DATA){
+                                if (error == CallError.ERROR_NO_DATA) {
                                     netwrokStatusVeiw.setText(R.string.no_call_data);
-                                }else{
+                                } else {
                                     netwrokStatusVeiw.setText(R.string.network_unstable);
                                 }
                             }
@@ -373,7 +387,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
                         break;
                     case DISCONNECTED: // call is disconnected
                         handler.removeCallbacks(timeoutHangup);
-                        @SuppressWarnings("UnnecessaryLocalVariable")final CallError fError = error;
+                        @SuppressWarnings("UnnecessaryLocalVariable") final CallError fError = error;
                         runOnUiThread(new Runnable() {
                             private void postDelayedCloseMsg() {
                                 uiHandler.postDelayed(new Runnable() {
@@ -421,15 +435,14 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
                                 } else if (fError == CallError.ERROR_NORESPONSE) {
                                     callingState = CallingState.NO_RESPONSE;
                                     callStateTextView.setText(s5);
-                                }else if (fError == CallError.ERROR_LOCAL_SDK_VERSION_OUTDATED || fError == CallError.ERROR_REMOTE_SDK_VERSION_OUTDATED){
+                                } else if (fError == CallError.ERROR_LOCAL_SDK_VERSION_OUTDATED || fError == CallError.ERROR_REMOTE_SDK_VERSION_OUTDATED) {
                                     callingState = CallingState.VERSION_NOT_SAME;
                                     callStateTextView.setText(R.string.call_version_inconsistent);
                                 } else {
                                     if (isRefused) {
                                         callingState = CallingState.REFUSED;
                                         callStateTextView.setText(s10);
-                                    }
-                                    else if (isAnswered) {
+                                    } else if (isAnswered) {
                                         callingState = CallingState.NORMAL;
                                         if (endCallTriggerByMe) {
 //                                        callStateTextView.setText(s6);
@@ -503,7 +516,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
                 chronometer.stop();
                 endCallTriggerByMe = true;
                 callStateTextView.setText(getResources().getString(R.string.hanging_up));
-                if(isRecording){
+                if (isRecording) {
                     callHelper.stopVideoRecord();
                 }
                 EMLog.d(TAG, "btn_hangup_call");
@@ -597,7 +610,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
     protected void onDestroy() {
         DemoHelper.getInstance().isVideoCalling = false;
         stopMonitor();
-        if(isRecording){
+        if (isRecording) {
             callHelper.stopVideoRecord();
             isRecording = false;
         }
@@ -617,21 +630,21 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
     /**
      * for debug & testing, you can remove this when release
      */
-    void startMonitor(){
+    void startMonitor() {
         monitor = true;
         new Thread(new Runnable() {
             public void run() {
-                while(monitor){
+                while (monitor) {
                     runOnUiThread(new Runnable() {
                         public void run() {
-                            monitorTextView.setText("WidthxHeight："+callHelper.getVideoWidth()+"x"+callHelper.getVideoHeight()
+                            monitorTextView.setText("WidthxHeight：" + callHelper.getVideoWidth() + "x" + callHelper.getVideoHeight()
                                     + "\nDelay：" + callHelper.getVideoLatency()
                                     + "\nFramerate：" + callHelper.getVideoFrameRate()
                                     + "\nLost：" + callHelper.getVideoLostRate()
                                     + "\nLocalBitrate：" + callHelper.getLocalBitrate()
                                     + "\nRemoteBitrate：" + callHelper.getRemoteBitrate());
 
-                            ((TextView)findViewById(R.id.tv_is_p2p)).setText(EMClient.getInstance().callManager().isDirectCall()
+                            ((TextView) findViewById(R.id.tv_is_p2p)).setText(EMClient.getInstance().callManager().isDirectCall()
                                     ? R.string.direct_call : R.string.relay_call);
                         }
                     });
@@ -644,14 +657,14 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
         }, "CallMonitor").start();
     }
 
-    void stopMonitor(){
+    void stopMonitor() {
         monitor = false;
     }
 
     @Override
     protected void onUserLeaveHint() {
         super.onUserLeaveHint();
-        if(isInCalling){
+        if (isInCalling) {
             try {
                 EMClient.getInstance().callManager().pauseVideoTransfer();
             } catch (HyphenateException e) {
@@ -663,7 +676,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
     @Override
     protected void onResume() {
         super.onResume();
-        if(isInCalling){
+        if (isInCalling) {
             try {
                 EMClient.getInstance().callManager().resumeVideoTransfer();
             } catch (HyphenateException e) {
@@ -690,7 +703,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
                             chronometer.stop();
                             endCallTriggerByMe = true;
                             callStateTextView.setText(getResources().getString(R.string.hanging_up));
-                            if(isRecording){
+                            if (isRecording) {
                                 callHelper.stopVideoRecord();
                             }
                             EMLog.d(TAG, "btn_hangup_call");

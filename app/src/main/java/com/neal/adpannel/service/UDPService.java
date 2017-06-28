@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -42,6 +43,8 @@ public class UDPService extends Service {
      * 解析单片机数据
      */
     Gson gson = new Gson();
+
+    String str_json = "{\"station\":1,\"status\":0,\"direction\":0,\"safety\":0,\"overload\":0,\"power\":0,\"brk\":0,\"temp\":0,\"hum\":0}";
 
     public UDPService() {
 
@@ -85,8 +88,13 @@ public class UDPService extends Service {
                     }
 
                     InetAddress inetAddress = InetAddress.getByName(ipaddress);
-                    DatagramSocket server = new DatagramSocket(5050, inetAddress);
-
+                    //设置成可重复绑定
+                    DatagramSocket server = null;
+                    if(server==null){
+                        server = new DatagramSocket(null);
+                        server.setReuseAddress(true);
+                        server.bind(new InetSocketAddress(inetAddress, 5050));
+                    }
                     byte[] recvBuf = new byte[1024];
                     DatagramPacket recvPacket
                             = new DatagramPacket(recvBuf, recvBuf.length);
@@ -96,6 +104,7 @@ public class UDPService extends Service {
                         String recvStr = new String(recvPacket.getData(), 0, recvPacket.getLength());
                         //通知更新状态
                         StatusEntity statusEntity = gson.fromJson(recvStr, StatusEntity.class);
+                        if(statusEntity != null)
                         onStatusChangedListener.update(statusEntity);
                         Logs.i("UDP", recvStr);
                     }
@@ -104,7 +113,10 @@ public class UDPService extends Service {
                 }
             }
         }).start();
-
+        //通知更新状态
+//        StatusEntity statusEntity = gson.fromJson(str_json, StatusEntity.class);
+//        if(statusEntity != null)
+//            onStatusChangedListener.update(statusEntity);
 
 
 
